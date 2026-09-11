@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 1: Công nghệ và Đời sống - Công nghệ 10</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom Style Settings -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .slide-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(12px) scale(0.99);
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-card.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            position: relative;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .pulse-slow {
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .drag-item {
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+            transform: scale(1.04);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+
+        .drop-zone {
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: #e0f2fe;
+            border-color: #0284c7;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4d7c0f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between bg-slate-100 overflow-hidden text-slate-800">
+
+    <!-- TOP NAVBAR -->
+    <header class="h-16 bg-white/90 backdrop-blur border-b border-slate-200 px-4 md:px-8 flex items-center justify-between z-30 shadow-sm shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div>
+                <h1 class="text-base md:text-lg font-bold text-slate-800 leading-tight">CÔNG NGHỆ 10 - BÀI 1</h1>
+                <p class="text-xs text-slate-500 font-medium">Công nghệ và Đời sống • Canvas Tương tác</p>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="hidden md:flex flex-col items-center w-1/3">
+            <div class="flex justify-between w-full text-xs font-semibold text-slate-600 mb-1">
+                <span>Tiến trình bài học</span>
+                <span id="progress-text">1 / 23</span>
+            </div>
+            <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shadow-inner">
+                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-full w-1/23 transition-all duration-300 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- MENU & SCORE -->
+        <div class="flex items-center space-x-3">
+            <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg flex items-center space-x-2 text-amber-700 font-semibold text-xs md:text-sm shadow-sm">
+                <i class="fa-solid fa-trophy text-amber-500"></i>
+                <span>Điểm tích lũy: <span id="score-display" class="font-bold text-amber-800">0</span>/100</span>
+            </div>
+            <button onclick="toggleToc()" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Mục lục màn hình">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- TOC SLIDE-OVER DRAWER -->
+    <div id="toc-drawer" class="fixed inset-0 bg-slate-900/50 z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex justify-end">
+        <div class="w-full max-w-md bg-white h-full shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300" id="toc-content">
+            <div>
+                <div class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-600"></i>
+                        Danh sách 23 Màn hình
+                    </h2>
+                    <button onclick="toggleToc()" class="text-slate-400 hover:text-slate-700 text-xl font-bold p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="mt-4 overflow-y-auto max-h-[calc(100vh-160px)] space-y-1.5 pr-2" id="toc-list">
+                    <!-- Dynamic List Populated by JS -->
+                </div>
+            </div>
+            <div class="pt-4 border-t border-slate-200 text-center text-xs text-slate-500">
+                Chương trình GDPT 2018 - Môn Công nghệ 10
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN SLIDE VIEWPORT CONTAINER -->
+    <main class="flex-1 relative overflow-hidden p-3 md:p-6 flex items-center justify-center">
+        <div class="w-full max-w-5xl h-full max-h-[820px] relative flex flex-col justify-between">
+
+            <!-- MÀN 1: TRANG BÌA -->
+            <div class="slide-card active bg-white rounded-3xl p-6 md:p-10 shadow-xl border border-slate-200 justify-between" id="slide-1">
+                <div class="flex flex-col md:flex-row gap-8 items-center h-full">
+                    <div class="flex-1 space-y-5 text-left">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider">
+                            <i class="fa-solid fa-compass"></i> BÀI 1 • CÔNG NGHỆ 10
+                        </div>
+                        <h1 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight">
+                            CÔNG NGHỆ VÀ <br><span class="gradient-text">ĐỜI SỐNG</span>
+                        </h1>
+                        <p class="text-lg md:text-xl font-semibold text-slate-600 italic">
+                            “Công nghệ bắt đầu từ đâu?”
+                        </p>
+                        <p class="text-sm text-slate-500 leading-relaxed">
+                            Cùng hành trình khám phá mối quan hệ kĩ thuật, khoa học, công nghệ và những ảnh hưởng sâu sắc đến Tự nhiên, Con người và Xã hội.
+                        </p>
+                        <div class="pt-4">
+                            <button onclick="goToSlide(2)" class="pulse-slow px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 flex items-center gap-3 text-lg transition-all hover:scale-105">
+                                <span>▶ BẮT ĐẦU KHÁM PHÁ</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- ILLUSTRATION HOUSE IMAGE (Fig 1.1) -->
+                    <div class="flex-1 w-full flex flex-col items-center justify-center relative">
+                        <div class="w-full h-64 md:h-80 rounded-2xl bg-gradient-to-tr from-sky-100 to-indigo-50 border border-sky-200 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden shadow-inner">
+                            <div class="absolute -top-10 -right-10 w-40 h-40 bg-amber-200/40 rounded-full blur-2xl"></div>
+                            <i class="fa-solid fa-house-laptop text-6xl md:text-8xl text-blue-600 mb-4 drop-shadow-md"></i>
+                            <div class="flex items-center gap-4 text-slate-700 font-semibold text-xs md:text-sm bg-white/80 backdrop-blur px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+                                <span><i class="fa-solid fa-solar-panel text-amber-500 mr-1"></i> Pin mặt trời</span>
+                                <span><i class="fa-solid fa-wind text-sky-500 mr-1"></i> Tuabin gió</span>
+                                <span><i class="fa-solid fa-wifi text-emerald-500 mr-1"></i> Smart Home</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-3 italic">Mô phỏng Ngôi nhà hiện đại (Hình 1.1 Sách giáo khoa)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÀN 2: KHỞI ĐỘNG -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-2">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold uppercase">Khởi động</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Câu hỏi tương tác khởi động</h2>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-100 flex flex-col md:flex-row items-center gap-6">
+                        <div class="w-24 h-24 rounded-2xl bg-white shadow-md flex items-center justify-center text-4xl text-blue-600 shrink-0">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <div>
+                            <p class="text-base md:text-lg font-bold text-slate-800">
+                                Chiếc điện thoại thông minh (Smartphone) là sản phẩm của KHOA HỌC, KĨ THUẬT hay CÔNG NGHỆ?
+                            </p>
+                            <p class="text-xs text-slate-500 mt-1">Hãy chọn đáp án em cho là chính xác nhất để mở khóa kiến thức bài học.</p>
+                        </div>
+                    </div>
+
+                    <!-- OPTIONS -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="s2-options">
+                        <button onclick="answerSlide2('A')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 font-bold text-slate-700 text-left transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-black">A</span>
+                            <span>Khoa học</span>
+                        </button>
+                        <button onclick="answerSlide2('B')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 font-bold text-slate-700 text-left transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-black">B</span>
+                            <span>Kĩ thuật</span>
+                        </button>
+                        <button onclick="answerSlide2('C')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50 font-bold text-slate-700 text-left transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-black">C</span>
+                            <span>Công nghệ</span>
+                        </button>
+                    </div>
+
+                    <!-- FEEDBACK CONTAINER -->
+                    <div id="s2-feedback" class="hidden p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm leading-relaxed"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <span class="text-xs text-slate-400">💡 Chọn một đáp án để tiếp tục</span>
+                    <button id="s2-next-btn" onclick="goToSlide(3)" disabled class="px-5 py-2.5 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed transition">
+                        Tiếp tục <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 3: MỤC TIÊU BÀI HỌC -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-3">
+                <div class="space-y-6">
+                    <div class="text-center space-y-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">Hành trình kiến thức</span>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800">Mục tiêu bài học</h2>
+                        <p class="text-sm text-slate-500">Sau bài học này, em sẽ làm chủ 5 mục tiêu cốt lõi:</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                        <div class="bg-sky-50 border border-sky-200 p-4 rounded-2xl flex flex-col items-center text-center hover:shadow-md transition">
+                            <div class="w-12 h-12 rounded-xl bg-sky-500 text-white text-xl flex items-center justify-center mb-3 shadow-md">🔎</div>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">1. Khám phá</h3>
+                            <p class="text-xs text-slate-600">Nêu khái niệm Khoa học, Kĩ thuật, Công nghệ.</p>
+                        </div>
+                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-2xl flex flex-col items-center text-center hover:shadow-md transition">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500 text-white text-xl flex items-center justify-center mb-3 shadow-md">⚙️</div>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">2. Phân biệt</h3>
+                            <p class="text-xs text-slate-600">Phân biệt bản chất của Khoa học, Kĩ thuật, Công nghệ.</p>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex flex-col items-center text-center hover:shadow-md transition">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white text-xl flex items-center justify-center mb-3 shadow-md">🔗</div>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">3. Kết nối</h3>
+                            <p class="text-xs text-slate-600">Mối quan hệ qua lại giữa KH ↔ KT ↔ CN.</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex flex-col items-center text-center hover:shadow-md transition">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500 text-white text-xl flex items-center justify-center mb-3 shadow-md">🌱</div>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">4. Đánh giá</h3>
+                            <p class="text-xs text-slate-600">Tác động tích cực & tiêu cực đến Tự nhiên, Con người, Xã hội.</p>
+                        </div>
+                        <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex flex-col items-center text-center hover:shadow-md transition">
+                            <div class="w-12 h-12 rounded-xl bg-rose-500 text-white text-xl flex items-center justify-center mb-3 shadow-md">💡</div>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">5. Vận dụng</h3>
+                            <p class="text-xs text-slate-600">Đánh giá sản phẩm công nghệ trong thực tế gia đình.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end">
+                    <button onclick="goToSlide(4)" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-md flex items-center gap-2">
+                        Bắt đầu Phần 1 <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 4: KHÁM PHÁ KHOA HỌC -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-4">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">1. Khoa học</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Các nhà khoa học và phát minh nổi bật</h2>
+                    </div>
+
+                    <!-- SCIENTISTS CARDS (Fig 1.2) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center">
+                            <div class="w-20 h-20 rounded-full bg-blue-100 border-2 border-blue-400 flex items-center justify-center text-3xl text-blue-700 mb-2 font-bold">
+                                🍎
+                            </div>
+                            <h3 class="font-bold text-slate-800">Isaac Newton</h3>
+                            <p class="text-xs text-slate-500 mt-1">Phát minh Vạn vật hấp dẫn, Các định luật chuyển động</p>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center">
+                            <div class="w-20 h-20 rounded-full bg-purple-100 border-2 border-purple-400 flex items-center justify-center text-3xl text-purple-700 mb-2 font-bold">
+                                ⚛️
+                            </div>
+                            <h3 class="font-bold text-slate-800">Marie Curie</h3>
+                            <p class="text-xs text-slate-500 mt-1">Khám phá nguyên tố phóng xạ Polonium & Radium</p>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center text-center">
+                            <div class="w-20 h-20 rounded-full bg-emerald-100 border-2 border-emerald-400 flex items-center justify-center text-3xl text-emerald-700 mb-2 font-bold">
+                                🔬
+                            </div>
+                            <h3 class="font-bold text-slate-800">Louis Pasteur</h3>
+                            <p class="text-xs text-slate-500 mt-1">Thuyết vi trùng, phương pháp tiệt trùng, vắc-xin</p>
+                        </div>
+                    </div>
+
+                    <!-- QUESTION -->
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl">
+                        <p class="font-bold text-amber-900 text-sm md:text-base">
+                            ❓ Điểm chung trong công việc của những nhà khoa học này là gì?
+                        </p>
+                        <div class="mt-3 space-y-2" id="s4-answers">
+                            <button onclick="answerSlide4(1)" class="w-full text-left p-3 rounded-xl bg-white border border-amber-200 hover:bg-amber-100 font-medium text-xs md:text-sm text-slate-700 transition">
+                                A. Nghiên cứu, khám phá tìm ra bản chất, quy luật của thế giới tự nhiên.
+                            </button>
+                            <button onclick="answerSlide4(2)" class="w-full text-left p-3 rounded-xl bg-white border border-amber-200 hover:bg-amber-100 font-medium text-xs md:text-sm text-slate-700 transition">
+                                B. Chế tạo trực tiếp các loại điện thoại thông minh và máy bay commercial.
+                            </button>
+                        </div>
+                        <div id="s4-feedback" class="hidden mt-3 p-3 bg-white rounded-xl text-xs text-slate-700 font-medium"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(3)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s4-next-btn" onclick="goToSlide(5)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Tiếp theo <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 5: KHOA HỌC LÀ GÌ? -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-5">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">Khái niệm cốt lõi</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Khoa học là gì?</h2>
+                    </div>
+
+                    <!-- DEFINITION BOX FROM TEXTBOOK -->
+                    <div class="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-2xl space-y-3">
+                        <p class="text-slate-800 text-sm md:text-base leading-relaxed font-medium">
+                            <strong>Khoa học</strong> là hệ thống tri thức về mọi quy luật và sự vận động của vật chất, những quy luật của tự nhiên, xã hội, tư duy.
+                        </p>
+                        <p class="text-slate-700 text-xs md:text-sm leading-relaxed">
+                            <strong>Khoa học tự nhiên</strong> có mục đích:
+                        </p>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            <span class="px-3 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs">NHẬN THỨC</span>
+                            <span class="px-3 py-1 bg-indigo-600 text-white rounded-lg font-bold text-xs">MÔ TẢ</span>
+                            <span class="px-3 py-1 bg-sky-600 text-white rounded-lg font-bold text-xs">GIẢI THÍCH</span>
+                            <span class="px-3 py-1 bg-teal-600 text-white rounded-lg font-bold text-xs">TIÊN ĐOÁN</span>
+                            <span class="px-3 py-1 bg-slate-800 text-white rounded-lg font-bold text-xs">QUY LUẬT TỰ NHIÊN</span>
+                        </div>
+                    </div>
+
+                    <!-- INTERACTIVE CHECK -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                        <h3 class="font-bold text-slate-800 text-sm mb-2">🤔 Hoạt động nhanh: Khoa học chủ yếu tìm hiểu điều gì?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="s5-check">
+                            <button onclick="checkSlide5(true)" class="p-3 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 rounded-xl font-medium text-xs text-slate-700 text-left transition">
+                                🔍 Các quy luật và bản chất sự vật, hiện tượng trong tự nhiên và xã hội.
+                            </button>
+                            <button onclick="checkSlide5(false)" class="p-3 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-400 rounded-xl font-medium text-xs text-slate-700 text-left transition">
+                                🛠️ Quy trình mua bán trang thiết bị máy móc thương mại trên thị trường.
+                            </button>
+                        </div>
+                        <div id="s5-feedback" class="hidden mt-3 p-3 rounded-xl text-xs font-bold"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(4)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(6)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition">
+                        Tiếp tục <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 6: KHOA HỌC TỰ NHIÊN -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-6">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">Lĩnh vực Khoa học</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Các lĩnh vực Khoa học Tự nhiên</h2>
+                    </div>
+
+                    <p class="text-xs text-slate-500">Chạm vào từng lĩnh vực để xem mô tả chi tiết theo SGK:</p>
+
+                    <!-- INTERACTIVE TABS -->
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-2" id="s6-tabs">
+                        <button onclick="showS6Tab('vatli')" class="s6-tab p-3 rounded-xl bg-blue-600 text-white font-bold text-xs text-center shadow-sm">Vật lí</button>
+                        <button onclick="showS6Tab('hoahoc')" class="s6-tab p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center">Hóa học</button>
+                        <button onclick="showS6Tab('sinhhoc')" class="s6-tab p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center">Sinh học</button>
+                        <button onclick="showS6Tab('thienvan')" class="s6-tab p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center">Thiên văn học</button>
+                        <button onclick="showS6Tab('traidat')" class="s6-tab p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center">KH Trái đất</button>
+                    </div>
+
+                    <div id="s6-content" class="bg-slate-50 border border-slate-200 p-5 rounded-2xl min-h-[140px] text-sm text-slate-700 space-y-2">
+                        <!-- Dynamic content -->
+                    </div>
+
+                    <!-- EXTRA INFO BOX FROM TEXTBOOK -->
+                    <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 flex items-center gap-3">
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-xl"></i>
+                        <span><strong>Thông tin bổ sung SGK:</strong> Lomonosov (Định luật bảo toàn vật chất), Mendeleev (Bảng tuần hoàn các nguyên tố hóa học), Einstein (Thuyết tương đối & lượng tử).</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(5)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(7)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md">
+                        Chuyển sang Kĩ thuật <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 7: KĨ THUẬT - TÌNH HUỐNG -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-7">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-bold uppercase">2. Kĩ thuật</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Khám phá tình huống ứng dụng</h2>
+                    </div>
+
+                    <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex flex-col md:flex-row items-center gap-4">
+                        <div class="text-5xl">🏋️‍♂️</div>
+                        <div>
+                            <h3 class="font-bold text-indigo-950 text-base">Tình huống (Hình 1.3 SGK):</h3>
+                            <p class="text-xs md:text-sm text-slate-700 mt-1">
+                                “Làm thế nào để con người di chuyển hoặc nâng một vật nặng vượt quá sức lực thể chất trực tiếp với lực tác dụng nhỏ hơn?”
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- INTERACTIVE CHOICE -->
+                    <div class="space-y-2">
+                        <p class="font-bold text-slate-800 text-xs">Em hãy chọn giải pháp kĩ thuật cổ điển tối ưu nhất dựa trên cơ sở khoa học:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="s7-choices">
+                            <button onclick="answerSlide7(1)" class="p-3 border border-slate-200 hover:border-indigo-500 rounded-xl bg-slate-50 hover:bg-indigo-50 text-xs font-bold text-slate-700 text-left transition">
+                                ⚖️ Bảy đòn bẩy (Nguyên lí Đòn bẩy Archimedes)
+                            </button>
+                            <button onclick="answerSlide7(2)" class="p-3 border border-slate-200 hover:border-indigo-500 rounded-xl bg-slate-50 hover:bg-indigo-50 text-xs font-bold text-slate-700 text-left transition">
+                                ⚙️ Ròng rọc cố định & ròng rọc động
+                            </button>
+                            <button onclick="answerSlide7(3)" class="p-3 border border-slate-200 hover:border-indigo-500 rounded-xl bg-slate-50 hover:bg-indigo-50 text-xs font-bold text-slate-700 text-left transition">
+                                ⭕ Bánh xe & trục quay
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="s7-feedback" class="hidden p-4 rounded-2xl bg-slate-100 text-xs md:text-sm text-slate-800"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(6)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s7-next-btn" onclick="goToSlide(8)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Tiếp theo <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 8: KĨ THUẬT LÀ GÌ? -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-8">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-bold uppercase">Khái niệm cốt lõi</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kĩ thuật là gì?</h2>
+                    </div>
+
+                    <div class="bg-indigo-50 border-l-4 border-indigo-600 p-5 rounded-r-2xl space-y-3">
+                        <p class="text-slate-800 text-sm md:text-base leading-relaxed font-medium">
+                            <strong>Kĩ thuật</strong> là việc <span class="text-indigo-700 font-bold">ứng dụng các nguyên lí khoa học</span> vào việc:
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center pt-1">
+                            <div class="p-2 bg-white rounded-xl shadow-sm border border-indigo-200 font-bold text-xs text-indigo-900">✏️ THIẾT KẾ</div>
+                            <div class="p-2 bg-white rounded-xl shadow-sm border border-indigo-200 font-bold text-xs text-indigo-900">🛠️ CHẾ TẠO</div>
+                            <div class="p-2 bg-white rounded-xl shadow-sm border border-indigo-200 font-bold text-xs text-indigo-900">⚙️ VẬN HÀNH</div>
+                            <div class="p-2 bg-white rounded-xl shadow-sm border border-indigo-200 font-bold text-xs text-indigo-900">📈 HỆ THỐNG</div>
+                        </div>
+                        <p class="text-xs text-slate-600 italic">
+                            ...các máy móc, thiết bị, công trình, quy trình một cách hiệu quả và kinh tế nhất.
+                        </p>
+                    </div>
+
+                    <!-- ESSENTIAL DIFFERENCE QUIZ -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs md:text-sm">❓ Kĩ thuật khác Khoa học ở điểm mấu chốt nào?</h3>
+                        <div class="space-y-2" id="s8-quiz">
+                            <button onclick="answerSlide8(false)" class="w-full p-2.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl text-xs text-left font-medium text-slate-700">
+                                A. Khoa học giải quyết bài toán kinh tế, kĩ thuật phát minh ra quy luật tự nhiên.
+                            </button>
+                            <button onclick="answerSlide8(true)" class="w-full p-2.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl text-xs text-left font-medium text-slate-700">
+                                B. Khoa học khám phá quy luật; Kĩ thuật ứng dụng quy luật đó để tạo giải pháp/thiết bị thực tiễn.
+                            </button>
+                        </div>
+                        <div id="s8-feedback" class="hidden p-2.5 rounded-xl text-xs font-bold"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(7)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(9)" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md">
+                        Thử thách phân loại <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 9: THỬ THÁCH PHÂN LOẠI KHOA HỌC HAY KĨ THUẬT -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-9">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold uppercase">Trò chơi phân loại</span>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-800">Khoa học hay Kĩ thuật?</h2>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500">Đã xếp: <span id="s9-count">0</span>/6</span>
+                    </div>
+
+                    <p class="text-xs text-slate-500">Kéo hoặc nhấn vào các thẻ tình huống bên dưới rồi chọn đúng hộp phân loại:</p>
+
+                    <!-- DRAGGABLE / CLICKABLE ITEMS -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="s9-items">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- TWO TARGET BUCKETS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div id="bucket-science" onclick="assignToBucket('science')" class="drop-zone border-2 border-dashed border-blue-400 bg-blue-50/50 rounded-2xl p-4 min-h-[110px] flex flex-col items-center justify-start">
+                            <h3 class="font-bold text-blue-800 text-sm mb-2"><i class="fa-solid fa-microscope mr-1"></i> 🔬 KHOA HỌC</h3>
+                            <div class="w-full space-y-1.5" id="s9-list-science"></div>
+                        </div>
+
+                        <div id="bucket-engineering" onclick="assignToBucket('engineering')" class="drop-zone border-2 border-dashed border-indigo-400 bg-indigo-50/50 rounded-2xl p-4 min-h-[110px] flex flex-col items-center justify-start">
+                            <h3 class="font-bold text-indigo-800 text-sm mb-2"><i class="fa-solid fa-gears mr-1"></i> ⚙️ KĨ THUẬT</h3>
+                            <div class="w-full space-y-1.5" id="s9-list-engineering"></div>
+                        </div>
+                    </div>
+
+                    <div id="s9-feedback" class="hidden p-3 rounded-xl text-xs font-bold text-center"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="resetSlide9()" class="px-3 py-1.5 rounded-lg bg-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-300">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Làm lại
+                    </button>
+                    <button id="s9-next-btn" onclick="goToSlide(10)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Chuyển sang Công nghệ <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 10: CÔNG NGHỆ - CÁC PHƯƠNG PHÁP TRỒNG CÂY -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-10">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold uppercase">3. Công nghệ</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Khám phá các Phương pháp trồng cây (Hình 1.4 SGK)</h2>
+                    </div>
+
+                    <!-- 3 METHODS -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col justify-between">
+                            <div>
+                                <div class="text-3xl mb-2">🌱</div>
+                                <h3 class="font-bold text-slate-800 text-sm">a) Địa canh</h3>
+                                <p class="text-xs text-slate-500 mt-1">Trồng cây truyền thống trong đất.</p>
+                            </div>
+                            <div class="mt-3 text-xs bg-white p-2 rounded-xl border border-slate-200">
+                                <span class="text-emerald-600 font-bold">Ưu:</span> Dễ làm, chi phí ban đầu thấp.<br>
+                                <span class="text-rose-600 font-bold">Nhược:</span> Phụ thuộc thổ nhưỡng, sâu bệnh.
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col justify-between">
+                            <div>
+                                <div class="text-3xl mb-2">💧</div>
+                                <h3 class="font-bold text-slate-800 text-sm">b) Thủy canh</h3>
+                                <p class="text-xs text-slate-500 mt-1">Trồng cây trong dung dịch dinh dưỡng.</p>
+                            </div>
+                            <div class="mt-3 text-xs bg-white p-2 rounded-xl border border-slate-200">
+                                <span class="text-emerald-600 font-bold">Ưu:</span> Tiết kiệm đất, kiểm soát dinh dưỡng tốt.<br>
+                                <span class="text-rose-600 font-bold">Nhược:</span> Cần bơm sục khí, dinh dưỡng chuẩn.
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col justify-between">
+                            <div>
+                                <div class="text-3xl mb-2">🌬️</div>
+                                <h3 class="font-bold text-slate-800 text-sm">c) Khí canh</h3>
+                                <p class="text-xs text-slate-500 mt-1">Rễ cây sống trong không khí, phun sương dinh dưỡng.</p>
+                            </div>
+                            <div class="mt-3 text-xs bg-white p-2 rounded-xl border border-slate-200">
+                                <span class="text-emerald-600 font-bold">Ưu:</span> Tiết kiệm nước tối đa, tăng trưởng nhanh.<br>
+                                <span class="text-rose-600 font-bold">Nhược:</span> Chi phí thiết bị cao, kĩ thuật phức tạp.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QUESTION -->
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl">
+                        <p class="font-bold text-emerald-950 text-xs md:text-sm">
+                            ❓ Điểm chung cốt lõi của các phương pháp trồng cây này là gì?
+                        </p>
+                        <div class="mt-2 space-y-2" id="s10-answers">
+                            <button onclick="answerSlide10(true)" class="w-full text-left p-2.5 bg-white border border-emerald-200 hover:bg-emerald-100 rounded-xl text-xs text-slate-700 font-medium">
+                                A. Đều là các GIẢI PHÁP & QUY TRÌNH nhằm biến đổi nguồn lực (đất, nước, chất dinh dưỡng) thành sản phẩm trồng trọt.
+                            </button>
+                            <button onclick="answerSlide10(false)" class="w-full text-left p-2.5 bg-white border border-emerald-200 hover:bg-emerald-100 rounded-xl text-xs text-slate-700 font-medium">
+                                B. Chỉ là máy móc cơ khí thông thường không có quy trình kĩ thuật.
+                            </button>
+                        </div>
+                        <div id="s10-feedback" class="hidden mt-2 p-2.5 rounded-xl text-xs font-bold"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(9)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s10-next-btn" onclick="goToSlide(11)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Tiếp theo <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 11: CÔNG NGHỆ LÀ GÌ? -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-11">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold uppercase">Khái niệm cốt lõi</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Công nghệ là gì?</h2>
+                    </div>
+
+                    <div class="bg-emerald-50 border-l-4 border-emerald-600 p-5 rounded-r-2xl space-y-3">
+                        <p class="text-slate-800 text-sm md:text-base leading-relaxed font-medium">
+                            <strong>Công nghệ</strong> là giải pháp, quy trình, bí quyết kĩ thuật có hoặc không kèm theo công cụ, phương tiện dùng để <span class="text-emerald-700 font-bold">biến đổi nguồn lực thành sản phẩm, dịch vụ</span>.
+                        </p>
+                    </div>
+
+                    <!-- KEYWORD FLOWCHART -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                        <h3 class="font-bold text-slate-800 text-xs md:text-sm mb-3">Cấu trúc cốt lõi của Công nghệ:</h3>
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-3 text-center">
+                            <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm font-bold text-xs text-slate-700 w-full">
+                                💡 Giải pháp, Quy trình,<br>Bí quyết kĩ thuật
+                            </div>
+                            <div class="text-xl text-emerald-600 font-bold">➔</div>
+                            <div class="p-3 bg-emerald-100 border border-emerald-300 rounded-xl shadow-sm font-bold text-xs text-emerald-900 w-full">
+                                🔄 Biến đổi Nguồn lực<br>(Đất, Nước, Năng lượng, Dữ liệu...)
+                            </div>
+                            <div class="text-xl text-emerald-600 font-bold">➔</div>
+                            <div class="p-3 bg-blue-100 border border-blue-300 rounded-xl shadow-sm font-bold text-xs text-blue-900 w-full">
+                                📦 Tạo ra Sản phẩm<br>hoặc Dịch vụ
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900">
+                        📌 <strong>Lưu ý quan trọng SGK:</strong> Trong mối quan hệ với kĩ thuật, <em>công nghệ là kết quả của hoạt động kĩ thuật</em>. Công nghệ có tính chuyển giao và luôn luôn được đổi mới!
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(10)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(12)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md">
+                        Khám phá Các loại công nghệ <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 12: CÔNG NGHỆ QUANH TA -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-12">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold uppercase">Cách mạng công nghiệp 4.0</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Các công nghệ đột phá quanh ta</h2>
+                    </div>
+
+                    <p class="text-xs text-slate-500">Chạm vào từng thẻ công nghệ để khám phá nội dung theo SGK:</p>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div onclick="toggleTechCard(this)" class="tech-card border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between">
+                            <div class="text-2xl mb-1">🧬</div>
+                            <h3 class="font-bold text-slate-800 text-xs">Công nghệ sinh học</h3>
+                            <p class="text-[11px] text-slate-500 hidden mt-2">Ứng dụng tế bào & vi sinh vật để tạo sản phẩm y dược, nông nghiệp sạch.</p>
+                        </div>
+                        <div onclick="toggleTechCard(this)" class="tech-card border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between">
+                            <div class="text-2xl mb-1">🔬</div>
+                            <h3 class="font-bold text-slate-800 text-xs">Công nghệ nano</h3>
+                            <p class="text-[11px] text-slate-500 hidden mt-2">Thao tác cấu trúc vật liệu ở quy mô nanomet (siêu nhỏ).</p>
+                        </div>
+                        <div onclick="toggleTechCard(this)" class="tech-card border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between">
+                            <div class="text-2xl mb-1">💻</div>
+                            <h3 class="font-bold text-slate-800 text-xs">Công nghệ số</h3>
+                            <p class="text-[11px] text-slate-500 hidden mt-2">Số hóa dữ liệu, phần mềm, ứng dụng trực tuyến và kết nối mạng.</p>
+                        </div>
+                        <div onclick="toggleTechCard(this)" class="tech-card border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between">
+                            <div class="text-2xl mb-1">🤖</div>
+                            <h3 class="font-bold text-slate-800 text-xs">Trí tuệ nhân tạo (AI)</h3>
+                            <p class="text-[11px] text-slate-500 hidden mt-2">Mô phỏng trí tuệ con người cho máy móc tự học và xử lí dữ liệu.</p>
+                        </div>
+                        <div onclick="toggleTechCard(this)" class="tech-card border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between">
+                            <div class="text-2xl mb-1">📊</div>
+                            <h3 class="font-bold text-slate-800 text-xs">Dữ liệu lớn (Big Data)</h3>
+                            <p class="text-[11px] text-slate-500 hidden mt-2">Tập hợp dữ liệu cực lớn cần công nghệ xử lí đặc biệt.</p>
+                        </div>
+                        <div onclick="toggleTechCard(this)" class="tech-card border border-slate-200 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between">
+                            <div class="text-2xl mb-1">🪛</div>
+                            <h3 class="font-bold text-slate-800 text-xs">Công nghệ in 3D</h3>
+                            <p class="text-[11px] text-slate-500 hidden mt-2">Tạo ra vật thể 3 chiều từ mô hình thiết kế số bằng cách bồi đắp từng lớp.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(11)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(13)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md">
+                        Đến Mối quan hệ 3 thành phần <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 13: GHÉP MẢNH MỐI QUAN HỆ -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-13">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold uppercase">Thử thách ghép nối</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Xây dựng Mối quan hệ KH ↔ KT ↔ CN</h2>
+                    </div>
+
+                    <p class="text-xs text-slate-500">Hãy chọn các phát biểu đúng thể hiện mối liên hệ qua lại trước khi xem sơ đồ chuẩn:</p>
+
+                    <div class="space-y-2" id="s13-options">
+                        <label class="flex items-start gap-3 p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded-xl cursor-pointer transition">
+                            <input type="checkbox" value="1" class="s13-chk mt-1 w-4 h-4 text-blue-600">
+                            <span class="text-xs font-medium text-slate-700">1. Khoa học là cơ sở của Kĩ thuật; Kĩ thuật dựa vào tri thức khoa học để giải quyết vấn đề thực tiễn.</span>
+                        </label>
+                        <label class="flex items-start gap-3 p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded-xl cursor-pointer transition">
+                            <input type="checkbox" value="2" class="s13-chk mt-1 w-4 h-4 text-blue-600">
+                            <span class="text-xs font-medium text-slate-700">2. Kĩ thuật giải quyết vấn đề tạo ra Công nghệ mới; đồng thời Công nghệ hiện có lại là cơ sở cho Kĩ thuật.</span>
+                        </label>
+                        <label class="flex items-start gap-3 p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded-xl cursor-pointer transition">
+                            <input type="checkbox" value="3" class="s13-chk mt-1 w-4 h-4 text-blue-600">
+                            <span class="text-xs font-medium text-slate-700">3. Công nghệ tạo thiết bị đo lường/phân tích giúp thúc đẩy Khoa học; Khoa học là cơ sở phát triển Công nghệ.</span>
+                        </label>
+                    </div>
+
+                    <button onclick="checkSlide13()" class="px-4 py-2 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 shadow">
+                        Kiểm tra lựa chọn
+                    </button>
+                    <div id="s13-feedback" class="hidden p-3 rounded-xl text-xs font-bold"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(12)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s13-next-btn" onclick="goToSlide(14)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Xem Sơ đồ Chuẩn <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 14: SƠ ĐỒ CHUẨN MỐI QUAN HỆ (HÌNH 1.5 SGK) -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-14">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">Trọng tâm bài học</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Sơ đồ Chuẩn Mối quan hệ (Hình 1.5 SGK)</h2>
+                    </div>
+
+                    <!-- INTERACTIVE DIAGRAM -->
+                    <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 p-6 rounded-2xl border border-slate-200 space-y-6">
+                        <div class="flex flex-col md:flex-row items-center justify-around gap-4">
+                            <div onclick="showS14Detail('kt')" class="cursor-pointer p-4 rounded-2xl bg-teal-100 border-2 border-teal-400 font-bold text-teal-900 text-center shadow-md w-44 hover:scale-105 transition">
+                                ⚙️ KĨ THUẬT
+                            </div>
+                            <div class="text-center font-bold text-blue-600 text-xs md:text-sm">
+                                ⇄ Tạo ra / Cơ sở ⇄
+                            </div>
+                            <div onclick="showS14Detail('cn')" class="cursor-pointer p-4 rounded-2xl bg-pink-100 border-2 border-pink-400 font-bold text-pink-900 text-center shadow-md w-44 hover:scale-105 transition">
+                                💻 CÔNG NGHỆ
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <div onclick="showS14Detail('kh')" class="cursor-pointer p-4 rounded-2xl bg-amber-100 border-2 border-amber-400 font-bold text-amber-900 text-center shadow-md w-48 hover:scale-105 transition">
+                                🔬 KHOA HỌC
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="s14-detail" class="p-4 rounded-xl bg-slate-100 text-xs md:text-sm text-slate-700 leading-relaxed border border-slate-200">
+                        👉 <em>Nhấp vào từng khối (Kĩ thuật, Công nghệ, Khoa học) ở trên để xem ví dụ minh họa SGK!</em>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(13)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(15)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md">
+                        Thử thách tư duy <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 15: THỬ THÁCH TƯ DUY -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-15">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold uppercase">Tư duy phản biện</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Thử thách Phân tích Tình huống giả định</h2>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="p-4 rounded-2xl bg-purple-50 border border-purple-200">
+                            <p class="font-bold text-purple-950 text-xs md:text-sm mb-2">
+                                ❓ Câu hỏi 1: Nếu Khoa học phát triển nhưng Kĩ thuật & Công nghệ không phát triển thì điều gì xảy ra?
+                            </p>
+                            <textarea id="s15-text1" rows="2" class="w-full p-2.5 rounded-xl border border-purple-200 text-xs focus:ring-2 focus:ring-purple-400 outline-none" placeholder="Nhập suy nghĩ của em..."></textarea>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <p class="font-bold text-indigo-950 text-xs md:text-sm mb-2">
+                                ❓ Câu hỏi 2: Nếu Công nghệ phát triển nhưng Khoa học & Kĩ thuật không phát triển thì điều gì xảy ra?
+                            </p>
+                            <textarea id="s15-text2" rows="2" class="w-full p-2.5 rounded-xl border border-indigo-200 text-xs focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="Nhập suy nghĩ của em..."></textarea>
+                        </div>
+
+                        <button onclick="submitSlide15()" class="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs hover:bg-purple-700 shadow">
+                            Gửi câu trả lời & Xem phản hồi định hướng
+                        </button>
+
+                        <div id="s15-feedback" class="hidden p-4 rounded-2xl bg-slate-100 text-xs text-slate-700 leading-relaxed border border-slate-200"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(14)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s15-next-btn" onclick="goToSlide(16)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Chuyển sang Phần II <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 16: CÔNG NGHỆ TỐT HAY XẤU? -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-16">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-rose-100 text-rose-800 rounded-lg text-xs font-bold uppercase">Phần II: Tác động Công nghệ</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Công nghệ là TỐT hay XẤU?</h2>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-rose-50 to-amber-50 p-6 rounded-2xl border border-rose-200 text-center space-y-4">
+                        <p class="text-lg font-black text-slate-800">Theo em, bản chất của Công nghệ là tốt hay xấu?</p>
+
+                        <div class="flex justify-center gap-4">
+                            <button onclick="voteSlide16('good')" class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-md transition flex items-center gap-2">
+                                👍 Tốt
+                            </button>
+                            <button onclick="voteSlide16('bad')" class="px-6 py-3 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold shadow-md transition flex items-center gap-2">
+                                👎 Xấu
+                            </button>
+                            <button onclick="voteSlide16('depends')" class="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-md transition flex items-center gap-2">
+                                ⚖️ Tùy thuộc cách sử dụng
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="s16-feedback" class="hidden p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs md:text-sm text-slate-700 leading-relaxed"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(15)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s16-next-btn" onclick="goToSlide(17)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Tác động đến Tự nhiên <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 17: CÔNG NGHỆ VỚI TỰ NHIÊN -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-17">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold uppercase">1. Tự nhiên</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Công nghệ với Tự nhiên</h2>
+                    </div>
+
+                    <!-- 2 COLUMN BOARD FROM SGK -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- POSITIVE -->
+                        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-2">
+                            <h3 class="font-bold text-emerald-900 text-sm flex items-center gap-2">
+                                🌱 TÁC ĐỘNG TÍCH CỰC
+                            </h3>
+                            <ul class="text-xs text-slate-700 space-y-1.5 list-disc pl-4">
+                                <li>Giúp quá trình khám phá tự nhiên tốt hơn, đạt thành tựu cao hơn.</li>
+                                <li>Hỗ trợ xử lí vấn đề môi trường, phòng chống thiên tai (Hình 1.6 SGK).</li>
+                                <li>Khai thác năng lượng tái tạo từ thiên nhiên (mặt trời, gió, nước - Hình 1.8 SGK).</li>
+                            </ul>
+                        </div>
+
+                        <!-- NEGATIVE -->
+                        <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl space-y-2">
+                            <h3 class="font-bold text-rose-900 text-sm flex items-center gap-2">
+                                ⚠️ TÁC ĐỘNG TIÊU CỰC
+                            </h3>
+                            <ul class="text-xs text-slate-700 space-y-1.5 list-disc pl-4">
+                                <li>Làm cạn kiệt tài nguyên thiên nhiên do khai thác quá mức.</li>
+                                <li>Một số công nghệ thải chất thải gây ô nhiễm môi trường và biến đổi khí hậu.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- INTERACTIVE CLASSIFICATION EXERCISE -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs">Phân loại nhanh ví dụ: "Hệ thống cảnh báo sớm sóng thần & bão lũ"</h3>
+                        <div class="flex gap-3">
+                            <button onclick="checkSlide17(true)" class="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700">Tích cực</button>
+                            <button onclick="checkSlide17(false)" class="px-4 py-2 rounded-xl bg-rose-600 text-white font-bold text-xs hover:bg-rose-700">Tiêu cực</button>
+                        </div>
+                        <div id="s17-feedback" class="hidden text-xs font-bold p-2 rounded-lg"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(16)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(18)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md">
+                        Công nghệ với Con người <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 18: CÔNG NGHỆ VỚI CON NGƯỜI -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-18">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-sky-100 text-sky-800 rounded-lg text-xs font-bold uppercase">2. Con người</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Công nghệ với Con người</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 rounded-2xl bg-sky-50 border border-sky-200 space-y-2">
+                            <h3 class="font-bold text-sky-900 text-sm">✨ Tiện nghi & Năng suất</h3>
+                            <p class="text-xs text-slate-700 leading-relaxed">
+                                Công nghệ mang lại sự tiện nghi, đáp ứng nhu cầu và thay đổi toàn diện cuộc sống con người (Hình 1.7 SGK). Làm tăng năng suất lao động và nâng cao hiệu quả hoạt động.
+                            </p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
+                            <h3 class="font-bold text-amber-900 text-sm">🤖 Thách thức Việc làm</h3>
+                            <p class="text-xs text-slate-700 leading-relaxed">
+                                Công nghệ tạo ra hệ thống sản xuất thông minh, tự động hóa cao nhưng đẩy một bộ phận người lao động đối mặt với tình trạng thất nghiệp nếu không nâng cao kĩ năng.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- CASE ANALYSIS -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs">❓ Tình huống: Dây chuyền robot tự động trong nhà máy lắp ráp ô tô</h3>
+                        <p class="text-xs text-slate-600">Tác động hai mặt đối với con người trong tình huống này là gì?</p>
+                        <div class="space-y-1.5" id="s18-quiz">
+                            <button onclick="answerSlide18(true)" class="w-full text-left p-2.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl text-xs text-slate-700">
+                                ✔️ Tăng năng suất và độ chính xác cực cao, nhưng có thể làm giảm vị trí lao động thủ công truyền thống.
+                            </button>
+                        </div>
+                        <div id="s18-feedback" class="hidden text-xs font-bold p-2 rounded-lg"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(17)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(19)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md">
+                        Công nghệ với Xã hội <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 19: CÔNG NGHỆ VỚI XÃ HỘI -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-19">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-bold uppercase">3. Xã hội</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Công nghệ với Xã hội</h2>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 p-5 rounded-2xl space-y-3">
+                        <p class="text-xs md:text-sm text-slate-800 leading-relaxed font-medium">
+                            • Công nghệ thúc đẩy kinh tế, xã hội phát triển, hỗ trợ quản lí tốt xã hội.
+                        </p>
+                        <p class="text-xs md:text-sm text-slate-800 leading-relaxed font-medium">
+                            • Công nghệ tác động mạnh mẽ đến cách nghĩ, lối sống của con người nhưng cũng làm con người dễ bị lệ thuộc vào công nghệ (mạng xã hội, thiết bị điện tử).
+                        </p>
+                    </div>
+
+                    <!-- REFLECTION QUESTION -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs md:text-sm">💬 Câu hỏi suy ngẫm: "Làm thế nào để không bị lệ thuộc vào công nghệ?"</h3>
+                        <div class="space-y-2">
+                            <button onclick="answerSlide19(1)" class="w-full text-left p-2.5 bg-white border border-slate-200 hover:bg-indigo-50 rounded-xl text-xs text-slate-700 font-medium">
+                                A. Sắp xếp thời gian sử dụng thiết bị hợp lí, tăng cường tương tác đời sống thực tế và rèn luyện thể thao.
+                            </button>
+                            <button onclick="answerSlide19(2)" class="w-full text-left p-2.5 bg-white border border-slate-200 hover:bg-indigo-50 rounded-xl text-xs text-slate-700 font-medium">
+                                B. Cấm tuyệt đối tất cả các loại công nghệ trong cuộc sống.
+                            </button>
+                        </div>
+                        <div id="s19-feedback" class="hidden p-2.5 rounded-xl text-xs font-bold"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(18)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s19-next-btn" onclick="goToSlide(20)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Hội đồng Công nghệ <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 20: HỘI ĐỒNG CÔNG NGHỆ -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-20">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold uppercase">Nhiệm vụ Đánh giá</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Hội đồng Đánh giá Công nghệ</h2>
+                    </div>
+
+                    <p class="text-xs text-slate-500">Chọn 1 lĩnh vực tác động để tiến hành đánh giá thực tế:</p>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="selectS20Domain('nature')" id="s20-btn-nature" class="p-3 rounded-2xl border-2 border-emerald-400 bg-emerald-50 text-emerald-900 font-bold text-xs">
+                            🌱 TỰ NHIÊN
+                        </button>
+                        <button onclick="selectS20Domain('human')" id="s20-btn-human" class="p-3 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-700 font-bold text-xs">
+                            👤 CON NGƯỜI
+                        </button>
+                        <button onclick="selectS20Domain('society')" id="s20-btn-society" class="p-3 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-700 font-bold text-xs">
+                            🏙️ XÃ HỘI
+                        </button>
+                    </div>
+
+                    <div id="s20-form" class="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2 text-xs">
+                        <!-- Dynamic assessment template -->
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(19)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(21)" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md">
+                        Nhiệm vụ Kĩ sư <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 21: EM LÀ KĨ SƯ CÔNG NGHỆ -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-21">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-bold uppercase">Vận dụng thực tế</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Em là Kĩ sư Công nghệ</h2>
+                    </div>
+
+                    <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-2xl text-xs space-y-1">
+                        <p class="font-bold text-indigo-950">📋 Tình huống Vận dụng SGK:</p>
+                        <p class="text-slate-700">Hãy đánh giá một sản phẩm/công nghệ đang sử dụng trong gia đình em (ví dụ: Nồi cơm điện cao tần, Máy lọc nước RO, Điều hòa Inverter, Robot hút bụi...):</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="font-bold text-slate-700">1. Tên công nghệ / sản phẩm:</label>
+                            <input id="s21-input1" type="text" class="w-full mt-1 p-2 border rounded-xl" placeholder="VD: Robot hút bụi lau nhà thông minh">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700">2. Công dụng chính:</label>
+                            <input id="s21-input2" type="text" class="w-full mt-1 p-2 border rounded-xl" placeholder="VD: Tự động quét và lau sàn nhà">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700">3. Lợi ích mang lại:</label>
+                            <input id="s21-input3" type="text" class="w-full mt-1 p-2 border rounded-xl" placeholder="VD: Tiết kiệm thời gian, sàn nhà luôn sạch">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700">4. Hạn chế / Tác động tiêu cực:</label>
+                            <input id="s21-input4" type="text" class="w-full mt-1 p-2 border rounded-xl" placeholder="VD: Tiêu thụ điện, chi phí mua cao">
+                        </div>
+                    </div>
+
+                    <button onclick="submitSlide21()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 shadow">
+                        Xuất báo cáo đánh giá kĩ sư
+                    </button>
+                    <div id="s21-report" class="hidden p-3 rounded-xl bg-slate-100 border text-xs font-medium"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(20)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button id="s21-next-btn" onclick="goToSlide(22)" disabled class="px-5 py-2 rounded-xl bg-slate-300 text-slate-500 font-bold cursor-not-allowed">
+                        Sơ đồ tổng kết <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 22: SƠ ĐỒ TỔNG KẾT -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-22">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">Tổng kết bài học</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Infographic Tổng kết Toàn bài</h2>
+                    </div>
+
+                    <!-- INTERACTIVE INFOGRAPHIC -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-center space-y-1">
+                            <span class="text-2xl">🔬</span>
+                            <h3 class="font-bold text-blue-900 text-xs">KHOA HỌC</h3>
+                            <p class="text-[11px] text-slate-600">Hệ thống tri thức về quy luật tự nhiên, xã hội, tư duy.</p>
+                        </div>
+                        <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-2xl text-center space-y-1">
+                            <span class="text-2xl">⚙️</span>
+                            <h3 class="font-bold text-indigo-900 text-xs">KĨ THUẬT</h3>
+                            <p class="text-[11px] text-slate-600">Ứng dụng nguyên lí khoa học vào thiết kế, chế tạo, vận hành.</p>
+                        </div>
+                        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-1">
+                            <span class="text-2xl">💻</span>
+                            <h3 class="font-bold text-emerald-900 text-xs">CÔNG NGHỆ</h3>
+                            <p class="text-[11px] text-slate-600">Giải pháp, quy trình biến đổi nguồn lực thành sản phẩm.</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center font-bold text-slate-500 text-xs">
+                        ⬇️ TÁC ĐỘNG ĐẾN ⬇️
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 text-center text-xs font-bold">
+                        <div class="p-2 bg-emerald-100 text-emerald-900 rounded-xl">🌱 TỰ NHIÊN</div>
+                        <div class="p-2 bg-sky-100 text-sky-900 rounded-xl">👤 CON NGƯỜI</div>
+                        <div class="p-2 bg-purple-100 text-purple-900 rounded-xl">🏙️ XÃ HỘI</div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="goToSlide(21)" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200">Trở lại</button>
+                    <button onclick="goToSlide(23)" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md">
+                        Làm Exit Ticket <i class="fa-solid fa-flag-checkered"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MÀN 23: EXIT TICKET -->
+            <div class="slide-card bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 justify-between overflow-y-auto" id="slide-23">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold uppercase">Đánh giá cuối bài</span>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-800">Exit Ticket - Phiếu thu hoạch</h2>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                            3 Câu hỏi kiểm tra
+                        </span>
+                    </div>
+
+                    <div class="space-y-3" id="s23-quiz-container">
+                        <!-- Q1 -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                            <p class="font-bold text-slate-800 text-xs">Câu 1 (Nhận biết): Khoa học khác Kĩ thuật chủ yếu ở điểm nào?</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                <button onclick="answerExitTicket(1, 'A')" class="et-q1 p-2 rounded-xl border bg-white text-left hover:bg-blue-50">A. KH phát minh quy luật; KT ứng dụng quy luật vào thiết kế/chế tạo.</button>
+                                <button onclick="answerExitTicket(1, 'B')" class="et-q1 p-2 rounded-xl border bg-white text-left hover:bg-blue-50">B. KH chỉ tạo ra sản phẩm tiêu dùng; KT chỉ tạo ra lý thuyết.</button>
+                            </div>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                            <p class="font-bold text-slate-800 text-xs">Câu 2 (Thông hiểu): Mối quan hệ giữa Kĩ thuật và Công nghệ là gì?</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                <button onclick="answerExitTicket(2, 'A')" class="et-q2 p-2 rounded-xl border bg-white text-left hover:bg-blue-50">A. KT tạo ra CN mới; CN hiện có là cơ sở cho KT.</button>
+                                <button onclick="answerExitTicket(2, 'B')" class="et-q2 p-2 rounded-xl border bg-white text-left hover:bg-blue-50">B. Hai lĩnh vực hoàn toàn độc lập không liên quan.</button>
+                            </div>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+                            <p class="font-bold text-slate-800 text-xs">Câu 3 (Vận dụng): Tác động hai mặt của Công nghệ tự động hóa sản xuất là gì?</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                <button onclick="answerExitTicket(3, 'A')" class="et-q3 p-2 rounded-xl border bg-white text-left hover:bg-blue-50">A. Tăng năng suất nhưng có thể gây nguy cơ thất nghiệp cho lao động thiếu kĩ năng.</button>
+                                <button onclick="answerExitTicket(3, 'B')" class="et-q3 p-2 rounded-xl border bg-white text-left hover:bg-blue-50">B. Chỉ hoàn toàn có tác hại tiêu cực cho con người.</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="s23-results" class="hidden p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+                        <h3 class="font-extrabold text-emerald-900 text-base">🎉 CHÚC MỪNG EM ĐÃ HOÀN THÀNH BÀI HỌC!</h3>
+                        <p class="text-xs text-slate-700">Tổng điểm tích lũy: <span id="final-score" class="font-bold text-amber-600 text-sm">0</span>/100</p>
+                        <p class="text-xs text-emerald-800 font-medium">Em đã nắm vững toàn bộ kiến thức Bài 1: Công nghệ và Đời sống!</p>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <button onclick="resetAllProgress()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 text-xs">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Học lại bài
+                    </button>
+                    <button onclick="finishExitTicket()" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md text-xs">
+                        Nộp phiếu thu hoạch
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- BOTTOM NAVIGATION CONTROL BAR -->
+    <footer class="h-16 bg-white border-t border-slate-200 px-4 md:px-8 flex items-center justify-between shrink-0 z-30">
+        <button id="btn-prev" onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>← Quay lại</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+            <button onclick="goToSlide(1)" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Trang chủ">
+                <i class="fa-solid fa-house"></i>
+            </button>
+            <span class="text-xs font-semibold text-slate-500 hidden sm:inline">Màn hình <span id="current-slide-num">1</span> / 23</span>
+        </div>
+
+        <button id="btn-next" onclick="nextSlide()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition flex items-center gap-2 shadow-sm">
+            <span>Tiếp tục →</span>
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </footer>
+
+    <!-- APPLICATION JAVASCRIPT CODE -->
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 23;
+        let userScore = 0;
+
+        // Slide Titles for Table of Contents
+        const slideTitles = [
+            "Màn 1: Trang bìa - Công nghệ & Đời sống",
+            "Màn 2: Khởi động - Smartphone là gì?",
+            "Màn 3: Mục tiêu bài học",
+            "Màn 4: Khám phá Khoa học - Các nhà KH",
+            "Màn 5: Khoa học là gì? Khái niệm",
+            "Màn 6: Các lĩnh vực Khoa học Tự nhiên",
+            "Màn 7: KĨ thuật - Tình huống Đòn bẩy",
+            "Màn 8: Kĩ thuật là gì? Khái niệm",
+            "Màn 9: Phân loại Khoa học hay Kĩ thuật",
+            "Màn 10: Công nghệ - Các phương pháp trồng cây",
+            "Màn 11: Công nghệ là gì? Khái niệm",
+            "Màn 12: Các công nghệ đột phá quanh ta",
+            "Màn 13: Thử thách ghép nối mối quan hệ",
+            "Màn 14: Sơ đồ chuẩn Mối quan hệ SGK",
+            "Màn 15: Thử thách tư duy giả định",
+            "Màn 16: Công nghệ là Tốt hay Xấu?",
+            "Màn 17: Công nghệ với Tự nhiên",
+            "Màn 18: Công nghệ với Con người",
+            "Màn 19: Công nghệ với Xã hội",
+            "Màn 20: Hội đồng Đánh giá Công nghệ",
+            "Màn 21: Em là Kĩ sư Công nghệ",
+            "Màn 22: Infographic Tổng kết toàn bài",
+            "Màn 23: Exit Ticket - Phiếu thu hoạch"
+        ];
+
+        function updateUI() {
+            // Update Active Slide View
+            document.querySelectorAll('.slide-card').forEach((card, idx) => {
+                if (idx + 1 === currentSlide) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+
+            // Update Header & Footer
+            document.getElementById('current-slide-num').innerText = currentSlide;
+            document.getElementById('progress-text').innerText = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('progress-bar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+            // Navigation Button States
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            document.getElementById('btn-prev').style.opacity = (currentSlide === 1) ? '0.5' : '1';
+
+            document.getElementById('btn-next').disabled = (currentSlide === totalSlides);
+            document.getElementById('btn-next').style.opacity = (currentSlide === totalSlides) ? '0.5' : '1';
+
+            // Highlight active TOC item
+            document.querySelectorAll('.toc-item').forEach((item, idx) => {
+                if (idx + 1 === currentSlide) {
+                    item.classList.add('bg-blue-50', 'text-blue-700', 'font-bold');
+                } else {
+                    item.classList.remove('bg-blue-50', 'text-blue-700', 'font-bold');
+                }
+            });
+        }
+
+        function goToSlide(slideNum) {
+            if (slideNum >= 1 && slideNum <= totalSlides) {
+                currentSlide = slideNum;
+                updateUI();
+                // Close TOC if open
+                document.getElementById('toc-drawer').classList.add('opacity-0', 'pointer-events-none');
+                document.getElementById('toc-content').classList.add('translate-x-full');
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateUI();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateUI();
+            }
+        }
+
+        function addScore(pts) {
+            userScore += pts;
+            document.getElementById('score-display').innerText = userScore;
+        }
+
+        function initTOC() {
+            const list = document.getElementById('toc-list');
+            list.innerHTML = '';
+            slideTitles.forEach((title, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'toc-item w-full text-left p-2.5 rounded-xl text-xs hover:bg-slate-100 text-slate-700 transition flex items-center gap-2 border border-transparent';
+                btn.innerHTML = `<span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 font-bold flex items-center justify-center shrink-0">${index + 1}</span> <span class="truncate">${title}</span>`;
+                btn.onclick = () => goToSlide(index + 1);
+                list.appendChild(btn);
+            });
+        }
+
+        function toggleToc() {
+            const drawer = document.getElementById('toc-drawer');
+            const content = document.getElementById('toc-content');
+            if (drawer.classList.contains('opacity-0')) {
+                drawer.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('translate-x-full');
+            } else {
+                drawer.classList.add('opacity-0', 'pointer-events-none');
+                content.classList.add('translate-x-full');
+            }
+        }
+
+
+        // SLIDE 2 LOGIC
+        function answerSlide2(option) {
+            const fb = document.getElementById('s2-feedback');
+            fb.classList.remove('hidden');
+            if (option === 'C') {
+                fb.className = "p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs md:text-sm leading-relaxed";
+                fb.innerHTML = `<strong> chính xác! 🎉 (+10 điểm)</strong><br>Điện thoại thông minh chính là một <strong>SẢN PHẨM CÔNG NGHỆ</strong> hoàn chỉnh. Nó được tạo ra nhờ kết hợp các phát minh Khoa học (vật lí bán dẫn, sóng điện từ) và giải pháp Kĩ thuật (thiết kế vi mạch, màn hình cảm ứng).`;
+                addScore(10);
+            } else {
+                fb.className = "p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs md:text-sm leading-relaxed";
+                fb.innerHTML = `<strong>Gần đúng!</strong> Điện thoại thông minh chứa đựng cả tri thức Khoa học và thiết kế Kĩ thuật, nhưng sản phẩm cuối cùng hoàn chỉnh đem lại dịch vụ cho người dùng được gọi chung là <strong>CÔNG NGHỆ</strong>!`;
+                addScore(5);
+            }
+            document.getElementById('s2-next-btn').disabled = false;
+            document.getElementById('s2-next-btn').className = "px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-md";
+        }
+
+        // SLIDE 4 LOGIC
+        function answerSlide4(type) {
+            const fb = document.getElementById('s4-feedback');
+            fb.classList.remove('hidden');
+            if (type === 1) {
+                fb.className = "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-medium";
+                fb.innerHTML = " chính xác! (+10 điểm) Cả Newton, Marie Curie và Pasteur đều tập trung nghiên cứu, khám phá ra các quy luật bản chất của tự nhiên!";
+                addScore(10);
+            } else {
+                fb.className = "mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-medium";
+                fb.innerHTML = "Chưa chính xác. Các nhà khoa học khám phá ra tri thức quy luật, còn chế tạo điện thoại/máy bay thuộc lĩnh vực Kĩ thuật và Công nghệ!";
+            }
+            document.getElementById('s4-next-btn').disabled = false;
+            document.getElementById('s4-next-btn').className = "px-5 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md";
+        }
+
+        // SLIDE 5 LOGIC
+        function checkSlide5(isCorrect) {
+            const fb = document.getElementById('s5-feedback');
+            fb.classList.remove('hidden');
+            if (isCorrect) {
+                fb.className = "mt-3 p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+                fb.innerText = " Chính xác! Mục đích của Khoa học Tự nhiên là nhận thức, mô tả, giải thích và tiên đoán quy luật tự nhiên!";
+            } else {
+                fb.className = "mt-3 p-3 rounded-xl text-xs font-bold bg-rose-100 text-rose-900 border border-rose-300";
+                fb.innerText = " Chưa đúng! Quy trình mua bán trang thiết bị thuộc hoạt động thương mại kinh tế.";
+            }
+        }
+
+        // SLIDE 6 LOGIC (Tabs)
+        const s6Data = {
+            vatli: "<strong>Vật lí:</strong> Nghiên cứu về chất, năng lượng và sự tương tác giữa chúng (cơ học, nhiệt học, quang học, điện từ...). SGK ví dụ: Thuyết tương đối Einstein, các định luật bảo toàn.",
+            hoahoc: "<strong>Hóa học:</strong> Nghiên cứu về thành phần, cấu trúc, tính chất và sự biến đổi của các chất. SGK ví dụ: Bảng tuần hoàn các nguyên tố hóa học của Mendeleev.",
+            sinhhoc: "<strong>Sinh học:</strong> Nghiên cứu về sự sống, các sinh vật sống và tương tác của chúng với môi trường. SGK ví dụ: Thuyết vi trùng và vắc-xin của Pasteur.",
+            thienvan: "<strong>Thiên văn học:</strong> Nghiên cứu về các vật thể vũ trụ và hành tinh. SGK nhấn mạnh sự hỗ trợ của Kính thiên văn điện tử trong nghiên cứu vũ trụ.",
+            traidat: "<strong>Khoa học Trái Đất:</strong> Nghiên cứu về cấu trúc, lịch sử và các hiện tượng của Trái Đất (địa chất, khí tượng, thủy văn)."
+        };
+
+        function showS6Tab(key) {
+            document.querySelectorAll('.s6-tab').forEach(tab => {
+                tab.className = "s6-tab p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center";
+            });
+            event.target.className = "s6-tab p-3 rounded-xl bg-blue-600 text-white font-bold text-xs text-center shadow-sm";
+            document.getElementById('s6-content').innerHTML = s6Data[key];
+        }
+
+        // SLIDE 7 LOGIC
+        function answerSlide7(opt) {
+            const fb = document.getElementById('s7-feedback');
+            fb.classList.remove('hidden');
+            fb.innerHTML = "<strong>Đúng rồi! 🎉 (+10 điểm)</strong> Cả đòn bẩy, ròng rọc và bánh xe đều là những ỨNG DỤNG NGUYÊN LÍ KHOA HỌC cổ điển để giải quyết bài toán di chuyển vật nặng một cách hiệu quả và tiết kiệm sức lao động nhất!";
+            addScore(10);
+            document.getElementById('s7-next-btn').disabled = false;
+            document.getElementById('s7-next-btn').className = "px-5 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md";
+        }
+
+        // SLIDE 8 LOGIC
+        function answerSlide8(isCorrect) {
+            const fb = document.getElementById('s8-feedback');
+            fb.classList.remove('hidden');
+            if (isCorrect) {
+                fb.className = "p-2.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+                fb.innerText = " Rất chính xác! Khoa học phát hiện ra quy luật, Kĩ thuật áp dụng quy luật đó để sáng chế ra máy móc!";
+            } else {
+                fb.className = "p-2.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-900 border border-rose-300";
+                fb.innerText = " Chưa đúng. Hãy nhớ: Khoa học khám phá tri thức, Kĩ thuật thiết kế chế tạo!";
+            }
+        }
+
+        const s9ItemsData = [
+            { id: 1, text: "Nghiên cứu Định luật bảo toàn năng lượng", type: "science" },
+            { id: 2, text: "Thiết kế hệ thống phanh ABS cho ô tô", type: "engineering" },
+            { id: 3, text: "Khám phá nguyên tố phóng xạ Radium", type: "science" },
+            { id: 4, text: "Vận hành máy phát điện tuabin gió", type: "engineering" },
+            { id: 5, text: "Giải thích hiện tượng Cầu vồng sau mưa", type: "science" },
+            { id: 6, text: "Chế tạo tàu ngầm chịu áp suất nước biển", type: "engineering" }
+        ];
+
+        let selectedS9Item = null;
+        let s9Assignments = {};
+
+        function initSlide9() {
+            const container = document.getElementById('s9-items');
+            container.innerHTML = '';
+            s9ItemsData.forEach(item => {
+                const div = document.createElement('div');
+                div.id = `s9-item-${item.id}`;
+                div.className = "drag-item p-2.5 rounded-xl bg-white border border-slate-200 shadow-sm text-xs font-semibold text-slate-700 cursor-pointer hover:border-blue-400";
+                div.innerText = item.text;
+                div.onclick = () => selectS9Item(item.id);
+                container.appendChild(div);
+            });
+        }
+
+        function selectS9Item(id) {
+            selectedS9Item = id;
+            s9ItemsData.forEach(i => {
+                const el = document.getElementById(`s9-item-${i.id}`);
+                if (el) {
+                    if (i.id === id) {
+                        el.classList.add('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-300');
+                    } else {
+                        el.classList.remove('border-blue-600', 'bg-blue-50', 'ring-2', 'ring-blue-300');
+                    }
+                }
+            });
+        }
+
+        function assignToBucket(targetType) {
+            if (!selectedS9Item) return;
+            const item = s9ItemsData.find(i => i.id === selectedS9Item);
+            if (!item) return;
+
+            s9Assignments[item.id] = targetType;
+
+            // Move element into bucket list UI
+            const el = document.getElementById(`s9-item-${item.id}`);
+            if (el) el.remove();
+
+            const targetList = targetType === 'science' ? document.getElementById('s9-list-science') : document.getElementById('s9-list-engineering');
+            const newBadge = document.createElement('div');
+            newBadge.className = "p-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-700 flex justify-between items-center shadow-xs";
+            newBadge.innerHTML = `<span>${item.text}</span> <i class="fa-solid fa-check text-emerald-500"></i>`;
+            targetList.appendChild(newBadge);
+
+            selectedS9Item = null;
+            checkSlide9Completion();
+        }
+
+        function checkSlide9Completion() {
+            const count = Object.keys(s9Assignments).length;
+            document.getElementById('s9-count').innerText = count;
+
+            if (count === 6) {
+                let correctCount = 0;
+                s9ItemsData.forEach(item => {
+                    if (s9Assignments[item.id] === item.type) correctCount++;
+                });
+
+                const fb = document.getElementById('s9-feedback');
+                fb.classList.remove('hidden');
+                if (correctCount === 6) {
+                    fb.className = "p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+                    fb.innerText = "🎉 Hoàn hảo! Em đã phân loại chính xác 6/6 tình huống! (+15 điểm)";
+                    addScore(15);
+                } else {
+                    fb.className = "p-3 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300";
+                    fb.innerText = `Em đã xếp đúng ${correctCount}/6 tình huống. Hãy kiểm tra kĩ: Nghiên cứu/Khám phá là Khoa học, Thiết kế/Chế tạo là Kĩ thuật!`;
+                }
+
+                document.getElementById('s9-next-btn').disabled = false;
+                document.getElementById('s9-next-btn').className = "px-5 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md";
+            }
+        }
+
+        function resetSlide9() {
+            s9Assignments = {};
+            selectedS9Item = null;
+            document.getElementById('s9-list-science').innerHTML = '';
+            document.getElementById('s9-list-engineering').innerHTML = '';
+            document.getElementById('s9-feedback').classList.add('hidden');
+            document.getElementById('s9-count').innerText = '0';
+            initSlide9();
+        }
+
+        // SLIDE 10 LOGIC
+        function answerSlide10(isCorrect) {
+            const fb = document.getElementById('s10-feedback');
+            fb.classList.remove('hidden');
+            if (isCorrect) {
+                fb.className = "mt-2 p-2.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+                fb.innerText = " Chính xác! (+10 điểm) Cả 3 phương pháp đều là CÔNG NGHỆ trồng trọt giúp biến đổi nguồn lực thành nông sản!";
+                addScore(10);
+            } else {
+                fb.className = "mt-2 p-2.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-900 border border-rose-300";
+                fb.innerText = "Chưa đúng. Hãy nhớ công nghệ bao gồm cả quy trình kĩ thuật!";
+            }
+            document.getElementById('s10-next-btn').disabled = false;
+            document.getElementById('s10-next-btn').className = "px-5 py-2 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-md";
+        }
+
+        // SLIDE 12 LOGIC (Tech Cards)
+        function toggleTechCard(card) {
+            const desc = card.querySelector('p');
+            if (desc.classList.contains('hidden')) {
+                desc.classList.remove('hidden');
+                card.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-50');
+            } else {
+                desc.classList.add('hidden');
+                card.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-50');
+            }
+        }
+
+        // SLIDE 13 LOGIC
+        function checkSlide13() {
+            const chks = document.querySelectorAll('.s13-chk:checked');
+            const fb = document.getElementById('s13-feedback');
+            fb.classList.remove('hidden');
+            if (chks.length === 3) {
+                fb.className = "p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+                fb.innerText = " Tốt lắm! Cả 3 phát biểu trên đều hoàn toàn chính xác theo SGK! (+10 điểm)";
+                addScore(10);
+            } else {
+                fb.className = "p-3 rounded-xl text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300";
+                fb.innerText = "Cả 3 phát biểu đều đúng! Em hãy tích chọn cả 3 đáp án nhé.";
+            }
+            document.getElementById('s13-next-btn').disabled = false;
+            document.getElementById('s13-next-btn').className = "px-5 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md";
+        }
+
+        // SLIDE 14 LOGIC
+        const s14Details = {
+            kt: "<strong>KĨ THUẬT:</strong> Tạo ra công nghệ mới dựa trên tri thức khoa học. Ví dụ SGK: Dựa trên nguyên lí lực từ tác động lên dây dẫn có dòng điện (Khoa học), Kĩ thuật sáng chế ra Động cơ điện (Công nghệ).",
+            cn: "<strong>CÔNG NGHỆ:</strong> Là kết quả của Kĩ thuật. Công nghệ hiện có lại làm cơ sở quan trọng cho Kĩ thuật để tiếp tục giải quyết các bài toán thực tiễn khác.",
+            kh: "<strong>KHOA HỌC:</strong> Là cơ sở của Kĩ thuật và Công nghệ. Ngược lại, Công nghệ tạo thiết bị đo lường/phân tích (như Kính thiên văn điện tử) giúp thúc đẩy Khoa học phát triển mạnh mẽ!"
+        };
+
+        function showS14Detail(key) {
+            document.getElementById('s14-detail').innerHTML = s14Details[key];
+        }
+
+        // SLIDE 15 LOGIC
+        function submitSlide15() {
+            const t1 = document.getElementById('s15-text1').value;
+            const t2 = document.getElementById('s15-text2').value;
+            const fb = document.getElementById('s15-feedback');
+
+            if (!t1 || !t2) {
+                alert("Em hãy điền đầy đủ suy nghĩ cho cả 2 câu hỏi nhé!");
+                return;
+            }
+
+            fb.classList.remove('hidden');
+            fb.innerHTML = `<strong> Cảm ơn em đã chia sẻ góc nhìn tư duy (+10 điểm)!</strong><br>
+            • <em>Phản hồi Câu 1:</em> Nếu Khoa học phát triển nhưng KT & CN không phát triển, các tri thức chỉ dừng lại ở lý thuyết suông, con người không có công cụ máy móc để cải thiện đời sống.<br>
+            • <em>Phản hồi Câu 2:</em> Nếu Công nghệ phát triển mà không có gốc Khoa học & Kĩ thuật, công nghệ đó sẽ sớm bị bế tắc, cạn kiệt cơ sở để cải tiến đổi mới lâu dài.`;
+
+            addScore(10);
+            document.getElementById('s15-next-btn').disabled = false;
+            document.getElementById('s15-next-btn').className = "px-5 py-2 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 shadow-md";
+        }
+
+        // SLIDE 16 LOGIC
+        function voteSlide16(choice) {
+            const fb = document.getElementById('s16-feedback');
+            fb.classList.remove('hidden');
+            fb.innerHTML = `<strong> Kết luận sư phạm SGK:</strong> Công nghệ mang tính hai mặt. Công nghệ bản thân nó là công cụ và giải pháp; tác động TÍCH CỰC hay TIÊU CỰC phụ thuộc rất lớn vào mục đích và cách thức con người ứng dụng vào Tự nhiên, Con người và Xã hội!`;
+
+            document.getElementById('s16-next-btn').disabled = false;
+            document.getElementById('s16-next-btn').className = "px-5 py-2 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 shadow-md";
+        }
+
+        // SLIDE 17 LOGIC
+        function checkSlide17(isPositive) {
+            const fb = document.getElementById('s17-feedback');
+            fb.classList.remove('hidden');
+            if (isPositive) {
+                fb.className = "text-xs font-bold p-2 rounded-lg bg-emerald-100 text-emerald-900";
+                fb.innerText = " Chính xác! Đây là tác động tích cực giúp phòng chống thiên tai và bảo vệ đời sống!";
+            } else {
+                fb.className = "text-xs font-bold p-2 rounded-lg bg-rose-100 text-rose-900";
+                fb.innerText = "Chưa đúng. Hệ thống cảnh báo bão lũ mang lại lợi ích tích cực cho cộng đồng!";
+            }
+        }
+
+        // SLIDE 18 LOGIC
+        function answerSlide18(val) {
+            const fb = document.getElementById('s18-feedback');
+            fb.classList.remove('hidden');
+            fb.className = "text-xs font-bold p-2 rounded-lg bg-sky-100 text-sky-900";
+            fb.innerText = " Đúng rồi! Robot tăng năng suất vượt trội nhưng đòi hỏi người lao động phải nâng cao trình độ chuyên môn!";
+        }
+
+        // SLIDE 19 LOGIC
+        function answerSlide19(opt) {
+            const fb = document.getElementById('s19-feedback');
+            fb.classList.remove('hidden');
+            if (opt === 1) {
+                fb.className = "p-2.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300";
+                fb.innerText = " Rất chính xác! Sử dụng công nghệ thông minh và cân bằng đời sống là chìa khóa chủ động!";
+            } else {
+                fb.className = "p-2.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-900 border border-rose-300";
+                fb.innerText = "Không nên cấm đoán cực đoan vì công nghệ mang lại rất nhiều lợi ích phát triển!";
+            }
+            document.getElementById('s19-next-btn').disabled = false;
+            document.getElementById('s19-next-btn').className = "px-5 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md";
+        }
+
+        // SLIDE 20 LOGIC
+        const s20Templates = {
+            nature: `<strong>Lĩnh vực: TỰ NHIÊN (Công nghệ Năng lượng Mặt trời)</strong><br>
+            • Lợi ích: Khai thác nguồn năng lượng sạch tái tạo, giảm khí thải carbon.<br>
+            • Mặt hạn chế: Chi phí sản xuất pin và xử lí chất thải pin sau sử dụng.<br>
+            • Đánh giá: Nên khuyến khích sử dụng kết hợp quy trình tái chế chuẩn.`,
+            human: `<strong>Lĩnh vực: CON NGƯỜI (Thiết bị Smartwatch đeo tay)</strong><br>
+            • Lợi ích: Theo dõi nhịp tim, giấc ngủ, cảnh báo sức khỏe kịp thời.<br>
+            • Mặt hạn chế: Có thể gây xao nhãng thông báo, phụ thuộc thiết bị số.<br>
+            • Đánh giá: Rất nên sử dụng có thời gian quản lí khoa học.`,
+            society: `<strong>Lĩnh vực: XÃ HỘI (Dịch vụ Công trực tuyến & AI)</strong><br>
+            • Lợi ích: Giảm thủ tục hành chính, minh bạch hóa dữ liệu xã hội.<br>
+            • Mặt hạn chế: Đòi hỏi an toàn bảo mật dữ liệu cá nhân cao.<br>
+            • Đánh giá: Xu thế tất yếu của xã hội hiện đại.`
+        };
+
+        function selectS20Domain(domain) {
+            document.getElementById('s20-form').innerHTML = s20Templates[domain];
+        }
+
+        // SLIDE 21 LOGIC
+        function submitSlide21() {
+            const v1 = document.getElementById('s21-input1').value;
+            const v2 = document.getElementById('s21-input2').value;
+            const v3 = document.getElementById('s21-input3').value;
+            const v4 = document.getElementById('s21-input4').value;
+
+            if (!v1 || !v2 || !v3 || !v4) {
+                alert("Em hãy điền đầy đủ cả 4 mục đánh giá kĩ sư nhé!");
+                return;
+            }
+
+            const rep = document.getElementById('s21-report');
+            rep.classList.remove('hidden');
+            rep.innerHTML = `<strong> BÁO CÁO ĐÁNH GIÁ KĨ SƯ CÔNG NGHỆ TRẺ (+10 điểm)</strong><br>
+            • <strong>Sản phẩm:</strong> ${v1}<br>
+            • <strong>Công dụng:</strong> ${v2}<br>
+            • <strong>Lợi ích:</strong> ${v3}<br>
+            • <strong>Hạn chế:</strong> ${v4}<br>
+            👉 <em>Đánh giá chung: Sản phẩm mang lại hiệu quả cao, cần chú ý khai thác hợp lí để khắc phục hạn chế!</em>`;
+
+            addScore(10);
+            document.getElementById('s21-next-btn').disabled = false;
+            document.getElementById('s21-next-btn').className = "px-5 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md";
+        }
+
+        // SLIDE 23 EXIT TICKET LOGIC
+        let exitTicketAnswers = {};
+
+        function answerExitTicket(qNum, ans) {
+            exitTicketAnswers[qNum] = ans;
+            document.querySelectorAll(`.et-q${qNum}`).forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'font-bold');
+            });
+            event.target.classList.add('bg-blue-600', 'text-white', 'font-bold');
+        }
+
+        function finishExitTicket() {
+            if (Object.keys(exitTicketAnswers).length < 3) {
+                alert("Em hãy trả lời đủ cả 3 câu hỏi thu hoạch nhé!");
+                return;
+            }
+
+            let correct = 0;
+            if (exitTicketAnswers[1] === 'A') correct++;
+            if (exitTicketAnswers[2] === 'A') correct++;
+            if (exitTicketAnswers[3] === 'A') correct++;
+
+            const finalPts = correct * 10;
+            addScore(finalPts);
+
+            document.getElementById('s23-results').classList.remove('hidden');
+            document.getElementById('final-score').innerText = userScore;
+        }
+
+        function resetAllProgress() {
+            userScore = 0;
+            document.getElementById('score-display').innerText = '0';
+            goToSlide(1);
+        }
+
+        window.onload = function() {
+            initTOC();
+            initSlide9();
+            showS6Tab('vatli');
+            selectS20Domain('nature');
+            updateUI();
+        };
+    </script>
+</body>
+</html>
